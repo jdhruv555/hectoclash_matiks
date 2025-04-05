@@ -15,6 +15,7 @@ interface GameState {
   level: number;
   streak: number;
   bestScore: number;
+  attempts: number;
 }
 
 export default function HectoClash() {
@@ -23,21 +24,23 @@ export default function HectoClash() {
   const [error, setError] = useState<string | null>(null);
   const [gameState, setGameState] = useState<GameState>({
     numbers: [],
-    target: 0,
+    target: 100,
     currentExpression: '',
     score: 0,
-    timeLeft: 60,
+    timeLeft: 120,
     gameOver: false,
     level: 1,
     streak: 0,
     bestScore: 0,
+    attempts: 0,
   });
 
   const generateNumbers = (level: number) => {
     const count = Math.min(5 + level, 8);
     const numbers: number[] = [];
     const used = new Set<number>();
-
+    
+    // Generate random numbers between 1 and 20
     while (numbers.length < count) {
       const num = Math.floor(Math.random() * 20) + 1;
       if (!used.has(num)) {
@@ -46,25 +49,40 @@ export default function HectoClash() {
       }
     }
 
-    // Generate a reachable target
-    const target = numbers.reduce((acc, num) => acc + num, 0);
-    return { numbers, target };
+    // Ensure the numbers can make 100 using basic operations
+    const sum = numbers.reduce((acc, num) => acc + num, 0);
+    if (sum > 100) {
+      // If sum is too high, replace some numbers with smaller ones
+      let excess = sum - 100;
+      for (let i = 0; i < numbers.length && excess > 0; i++) {
+        if (numbers[i] > excess) {
+          numbers[i] -= excess;
+          excess = 0;
+        } else {
+          excess -= numbers[i];
+          numbers[i] = 1;
+        }
+      }
+    }
+
+    return numbers;
   };
 
   const startGame = async () => {
     try {
       setLoading(true);
-      const { numbers, target } = generateNumbers(1);
+      const numbers = generateNumbers(1);
       setGameState({
         numbers,
-        target,
+        target: 100,
         currentExpression: '',
         score: 0,
-        timeLeft: 60,
+        timeLeft: 120,
         gameOver: false,
         level: 1,
         streak: 0,
         bestScore: 0,
+        attempts: 0,
       });
       setGameStarted(true);
     } catch (err) {
@@ -113,11 +131,10 @@ export default function HectoClash() {
         }));
 
         // Generate new numbers for next round
-        const { numbers, target } = generateNumbers(gameState.level + 1);
+        const numbers = generateNumbers(gameState.level + 1);
         setGameState(prev => ({
           ...prev,
           numbers,
-          target,
           currentExpression: '',
         }));
 
@@ -129,6 +146,7 @@ export default function HectoClash() {
         setGameState(prev => ({
           ...prev,
           streak: 0,
+          attempts: prev.attempts + 1,
           currentExpression: '',
         }));
       }
@@ -136,6 +154,7 @@ export default function HectoClash() {
       setGameState(prev => ({
         ...prev,
         streak: 0,
+        attempts: prev.attempts + 1,
         currentExpression: '',
       }));
     }
@@ -221,7 +240,7 @@ export default function HectoClash() {
 
             {/* Timer */}
             <div className="relative">
-              <Progress value={(gameState.timeLeft / 60) * 100} className="h-2" />
+              <Progress value={(gameState.timeLeft / 120) * 100} className="h-2" />
               <p className="text-center mt-2 font-semibold">{gameState.timeLeft}s</p>
             </div>
 
