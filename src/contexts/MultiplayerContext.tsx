@@ -1,9 +1,9 @@
-
-import React, { createContext, useContext, useEffect, useReducer, useState } from 'react';
+import React, { createContext, useContext, useEffect, useReducer, useState, useCallback } from 'react';
 import { DuelMatch, Player, createDuelMatch, joinMatch, startMatch, submitSolution, handleDisconnect, addSpectator, removeSpectator } from '@/utils/multiplayerGameState';
 import pusherService, { PusherMessage } from '@/services/pusherService';
 import { toast } from 'sonner';
 import { nanoid } from 'nanoid';
+import { GameState, GameEvent } from '@/lib/pusher';
 
 export type GameType = 'math-duel' | 'sudoku' | 'pattern-recognition' | 'memory-game' | 'number-puzzle' | 'cryptarithmetic';
 
@@ -141,31 +141,25 @@ const reducer = (state: MultiplayerState, action: MultiplayerAction): Multiplaye
   }
 };
 
-interface MultiplayerContextProps {
-  state: MultiplayerState;
-  connect: () => Promise<void>;
-  disconnect: () => void;
-  createMatch: (difficulty: string, gameType?: GameType) => void;
-  joinMatch: (matchId: string) => void;
-  leaveMatch: () => void;
-  startMatch: () => void;
-  submitSolution: (solution: string) => void;
-  updateSolution: (solution: string) => void;
-  spectateMatch: (matchId: string) => void;
-  stopSpectating: () => void;
-  sendReaction: (reaction: string) => void;
-  getAvailableMatches: (gameType?: GameType) => void;
-  getActiveMatches: (gameType?: GameType) => void;
-  getLeaderboard: (gameType?: GameType) => void;
-  setUsername: (username: string) => void;
-  setGameType: (gameType: GameType) => void;
-}
+type MultiplayerContextType = {
+  gameState: GameState;
+  joinGame: (gameId: string) => void;
+  leaveGame: (gameId: string) => void;
+  makeMove: (gameId: string, move: any) => void;
+  handleGameEvent: (event: GameEvent) => void;
+};
 
-const MultiplayerContext = createContext<MultiplayerContextProps | undefined>(undefined);
+const MultiplayerContext = createContext<MultiplayerContextType | undefined>(undefined);
 
 export const MultiplayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [connectionTimeout, setConnectionTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [gameState, setGameState] = useState<GameState>({
+    players: [],
+    currentTurn: '',
+    gameStarted: false,
+    gameEnded: false,
+  });
 
   useEffect(() => {
     localStorage.setItem('hectoclash_user_id', state.userId);
@@ -344,26 +338,52 @@ export const MultiplayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     dispatch({ type: 'SET_GAME_TYPE', gameType });
   };
 
+  const handleGameEvent = useCallback((event: GameEvent) => {
+    switch (event.type) {
+      case 'start-game':
+        setGameState(prev => ({ ...prev, gameStarted: true }));
+        break;
+      case 'player-move':
+        // Handle player move
+        break;
+      case 'game-end':
+        setGameState(prev => ({ ...prev, gameEnded: true, winner: event.data.winner }));
+        break;
+      case 'player-join':
+        setGameState(prev => ({
+          ...prev,
+          players: [...prev.players, event.data.playerId],
+        }));
+        break;
+      case 'player-leave':
+        setGameState(prev => ({
+          ...prev,
+          players: prev.players.filter(id => id !== event.data.playerId),
+        }));
+        break;
+    }
+  }, []);
+
+  const joinGame = useCallback((gameId: string) => {
+    // Implementation will be added when we create the backend
+  }, []);
+
+  const leaveGame = useCallback((gameId: string) => {
+    // Implementation will be added when we create the backend
+  }, []);
+
+  const makeMove = useCallback((gameId: string, move: any) => {
+    // Implementation will be added when we create the backend
+  }, []);
+
   return (
     <MultiplayerContext.Provider
       value={{
-        state,
-        connect,
-        disconnect,
-        createMatch,
-        joinMatch,
-        leaveMatch,
-        startMatch,
-        submitSolution,
-        updateSolution,
-        spectateMatch,
-        stopSpectating,
-        sendReaction,
-        getAvailableMatches,
-        getActiveMatches,
-        getLeaderboard,
-        setUsername,
-        setGameType
+        gameState,
+        joinGame,
+        leaveGame,
+        makeMove,
+        handleGameEvent,
       }}
     >
       {children}
@@ -373,7 +393,7 @@ export const MultiplayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
 export const useMultiplayer = () => {
   const context = useContext(MultiplayerContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useMultiplayer must be used within a MultiplayerProvider');
   }
   return context;
