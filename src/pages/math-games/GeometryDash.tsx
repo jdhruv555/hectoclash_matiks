@@ -1,129 +1,154 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { api, GeometryDashProblem } from '@/lib/api';
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface Obstacle {
-  type: 'math' | 'jump';
-  position: number;
-  value?: number;
+interface GameState {
+  playerPosition: number;
+  obstacles: GeometryDashProblem[];
+  currentProblem: { question: string; answer: number } | null;
+  score: number;
+  gameOver: boolean;
 }
-
-const generateMathProblem = () => {
-  const operations = ['+', '-', '×'];
-  const operation = operations[Math.floor(Math.random() * operations.length)];
-  let num1, num2, answer;
-
-  switch (operation) {
-    case '+':
-      num1 = Math.floor(Math.random() * 20) + 1;
-      num2 = Math.floor(Math.random() * 20) + 1;
-      answer = num1 + num2;
-      break;
-    case '-':
-      num1 = Math.floor(Math.random() * 20) + 1;
-      num2 = Math.floor(Math.random() * num1) + 1;
-      answer = num1 - num2;
-      break;
-    case '×':
-      num1 = Math.floor(Math.random() * 10) + 1;
-      num2 = Math.floor(Math.random() * 10) + 1;
-      answer = num1 * num2;
-      break;
-    default:
-      num1 = 0;
-      num2 = 0;
-      answer = 0;
-  }
-
-  return {
-    question: `${num1} ${operation} ${num2} = ?`,
-    answer
-  };
-};
 
 export default function GeoDash() {
   const [gameStarted, setGameStarted] = useState(false);
-  const [score, setScore] = useState(0);
-  const [playerPosition, setPlayerPosition] = useState(0);
-  const [obstacles, setObstacles] = useState<Obstacle[]>([]);
-  const [currentProblem, setCurrentProblem] = useState<{ question: string; answer: number } | null>(null);
-  const [gameOver, setGameOver] = useState(false);
-  const gameLoop = useRef<number>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const gameState = useRef<GameState>({
+    playerPosition: 0,
+    obstacles: [],
+    currentProblem: null,
+    score: 0,
+    gameOver: false,
+  });
+  const animationFrameId = useRef<number>();
+  const lastTime = useRef<number>(0);
   const playerRef = useRef<HTMLDivElement>(null);
 
-  const startGame = () => {
-    setGameStarted(true);
-    setScore(0);
-    setPlayerPosition(0);
-    setGameOver(false);
-    setObstacles([]);
-    setCurrentProblem(null);
-    
-    // Generate initial obstacles
-    const initialObstacles: Obstacle[] = [];
-    for (let i = 0; i < 5; i++) {
-      initialObstacles.push({
-        type: Math.random() > 0.5 ? 'math' : 'jump',
-        position: 100 + i * 200,
-        value: Math.random() > 0.5 ? generateMathProblem().answer : undefined
-      });
-    }
-    setObstacles(initialObstacles);
+  const updateGame = useCallback((timestamp: number) => {
+    if (!lastTime.current) lastTime.current = timestamp;
+    const deltaTime = timestamp - lastTime.current;
+    lastTime.current = timestamp;
 
-    // Start game loop
-    gameLoop.current = window.setInterval(() => {
-      setPlayerPosition(prev => {
-        const newPosition = prev + 2;
-        if (newPosition >= 1000) {
-          setGameOver(true);
-          return prev;
-        }
-        return newPosition;
-      });
-
+    if (deltaTime > 16) { // Cap at ~60fps
+      gameState.current.playerPosition += 2;
+      
       // Check for collisions
-      obstacles.forEach(obstacle => {
-        if (Math.abs(playerPosition - obstacle.position) < 20) {
+      gameState.current.obstacles.forEach(obstacle => {
+        if (Math.abs(gameState.current.playerPosition - obstacle.position) < 20) {
           if (obstacle.type === 'math') {
-            setCurrentProblem(generateMathProblem());
+            gameState.current.currentProblem = {
+              question: `${obstacle.value} + ? = ${(obstacle.value as number) + 5}`,
+              answer: 5
+            };
           } else {
             // Jump obstacle
-            setPlayerPosition(prev => prev + 50);
+            gameState.current.playerPosition += 50;
           }
         }
       });
 
       // Generate new obstacles
-      if (playerPosition > obstacles[obstacles.length - 1].position - 500) {
-        setObstacles(prev => [
-          ...prev.slice(1),
+      if (gameState.current.playerPosition > gameState.current.obstacles[gameState.current.obstacles.length - 1].position - 500) {
+        gameState.current.obstacles = [
+          ...gameState.current.obstacles.slice(1),
           {
             type: Math.random() > 0.5 ? 'math' : 'jump',
-            position: obstacles[obstacles.length - 1].position + 200,
-            value: Math.random() > 0.5 ? generateMathProblem().answer : undefined
+            position: gameState.current.obstacles[gameState.current.obstacles.length - 1].position + 200,
+            value: Math.random() > 0.5 ? Math.floor(Math.random() * 20) + 1 : undefined
           }
-        ]);
+        ];
       }
-    }, 50);
+
+      // Check for game over
+      if (gameState.current.playerPosition >= 1000) {
+        gameState.current.gameOver = true;
+        api.saveGeometryDashScore(gameState.current.score);
+      }
+    }
+
+    if (!gameState.current.gameOver) {
+      animationFrameId.current = requestAnimationFrame(updateGame);
+    }
+  }, []);
+
+  const startGame = async () => {
+    try {
+      setLoading(true);
+      const obstacles = await api.getGeometryDashProblems();
+      gameState.current = {
+        playerPosition: 0,
+        obstacles,
+        currentProblem: null,
+        score: 0,
+        gameOver: false,
+      };
+      setGameStarted(true);
+      lastTime.current = 0;
+      animationFrameId.current = requestAnimationFrame(updateGame);
+    } catch (err) {
+      setError('Failed to start game. Please try again later.');
+      console.error('Error starting game:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAnswer = (answer: number) => {
-    if (currentProblem && answer === currentProblem.answer) {
-      setScore(prev => prev + 10);
-      setCurrentProblem(null);
+    if (gameState.current.currentProblem && answer === gameState.current.currentProblem.answer) {
+      gameState.current.score += 10;
+      gameState.current.currentProblem = null;
     } else {
-      setGameOver(true);
+      gameState.current.gameOver = true;
+      api.saveGeometryDashScore(gameState.current.score);
     }
   };
 
   useEffect(() => {
     return () => {
-      if (gameLoop.current) {
-        clearInterval(gameLoop.current);
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
       }
     };
   }, []);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4">
+        <Card className="max-w-4xl mx-auto">
+          <CardHeader>
+            <CardTitle>GeoDash: Math Rush</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-1/4 mx-auto" />
+              <Skeleton className="h-40 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4">
+        <Card className="max-w-4xl mx-auto">
+          <CardHeader>
+            <CardTitle>GeoDash: Math Rush</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center text-red-500">
+              <p>{error}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -134,7 +159,7 @@ export default function GeoDash() {
         <CardContent>
           <div className="space-y-4">
             <div className="text-center">
-              <p className="text-lg font-semibold">Score: {score}</p>
+              <p className="text-lg font-semibold">Score: {gameState.current.score}</p>
             </div>
 
             {!gameStarted ? (
@@ -147,11 +172,11 @@ export default function GeoDash() {
                 <div
                   ref={playerRef}
                   className="absolute w-8 h-8 bg-blue-500 rounded-full"
-                  style={{ left: `${playerPosition}px`, top: '160px' }}
+                  style={{ left: `${gameState.current.playerPosition}px`, top: '160px' }}
                 />
 
                 {/* Obstacles */}
-                {obstacles.map((obstacle, index) => (
+                {gameState.current.obstacles.map((obstacle, index) => (
                   <div
                     key={index}
                     className={`absolute w-8 h-8 ${
@@ -166,9 +191,9 @@ export default function GeoDash() {
               </div>
             )}
 
-            {currentProblem && (
+            {gameState.current.currentProblem && (
               <div className="mt-4 p-4 bg-white rounded-lg shadow">
-                <p className="text-xl text-center">{currentProblem.question}</p>
+                <p className="text-xl text-center">{gameState.current.currentProblem.question}</p>
                 <div className="flex gap-2 mt-2">
                   {[1, 2, 3, 4, 5].map(num => (
                     <Button
@@ -183,10 +208,10 @@ export default function GeoDash() {
               </div>
             )}
 
-            {gameOver && (
+            {gameState.current.gameOver && (
               <div className="mt-4 text-center">
                 <p className="text-xl font-bold text-red-500">Game Over!</p>
-                <p className="text-lg">Final Score: {score}</p>
+                <p className="text-lg">Final Score: {gameState.current.score}</p>
                 <Button onClick={startGame} className="mt-2">
                   Play Again
                 </Button>

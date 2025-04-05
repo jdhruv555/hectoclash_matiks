@@ -1,57 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-
-interface Riddle {
-  question: string;
-  answer: string;
-  hint: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-}
-
-const riddles: Riddle[] = [
-  {
-    question: "I am a number that when multiplied by 3 and then divided by 2 gives 9. What am I?",
-    answer: "6",
-    hint: "Try working backwards from 9",
-    difficulty: "easy"
-  },
-  {
-    question: "If you have 12 apples and take away 3, then add 5, and finally divide by 2, how many apples do you have?",
-    answer: "7",
-    hint: "Follow the operations step by step",
-    difficulty: "easy"
-  },
-  {
-    question: "A number is increased by 25% and then decreased by 20%. The final result is 100. What was the original number?",
-    answer: "100",
-    hint: "Let x be the original number and solve the equation",
-    difficulty: "medium"
-  },
-  {
-    question: "If 2^x = 16 and 3^y = 27, what is x + y?",
-    answer: "7",
-    hint: "Find the values of x and y separately",
-    difficulty: "medium"
-  },
-  {
-    question: "The sum of three consecutive even numbers is 54. What is the largest number?",
-    answer: "20",
-    hint: "Let n be the smallest number and write an equation",
-    difficulty: "hard"
-  }
-];
+import { api, Riddle } from '@/lib/api';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Riddles() {
+  const [riddles, setRiddles] = useState<Riddle[]>([]);
   const [currentRiddle, setCurrentRiddle] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
   const [showHint, setShowHint] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRiddles = async () => {
+      try {
+        const data = await api.getRiddles();
+        setRiddles(data);
+      } catch (err) {
+        setError('Failed to load riddles. Please try again later.');
+        console.error('Error fetching riddles:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRiddles();
+  }, []);
 
   const handleSubmit = () => {
     if (userAnswer.toLowerCase().trim() === riddles[currentRiddle].answer.toLowerCase().trim()) {
@@ -69,6 +50,42 @@ export default function Riddles() {
       setShowAnswer(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4">
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle>Mathematical Riddles</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4">
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle>Mathematical Riddles</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center text-red-500">
+              <p>{error}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">
