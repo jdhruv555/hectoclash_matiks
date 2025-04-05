@@ -14,9 +14,24 @@ const SpeedMath: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(60);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Calculate answer without using eval
+  const calculateAnswer = (problem: string): number => {
+    if (!problem) return 0;
+    const [num1Str, operator, num2Str] = problem.split(' ');
+    const num1 = parseInt(num1Str);
+    const num2 = parseInt(num2Str);
+    
+    switch (operator) {
+      case '+': return num1 + num2;
+      case '-': return num1 - num2;
+      case '*': return num1 * num2;
+      default: return 0;
+    }
+  };
+
   // Memoize the correct answer calculation
   const correctAnswer = useMemoizedValue(
-    eval(currentProblem),
+    calculateAnswer(currentProblem),
     [currentProblem]
   );
 
@@ -70,7 +85,7 @@ const SpeedMath: React.FC = () => {
       <div className="w-full max-w-2xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <div className="text-2xl font-bold">Score: {score}</div>
-          {isPlaying && <Timer timeLeft={timeLeft} onTimeUp={handleGameEnd} />}
+          {isPlaying && <Timer timeLeft={timeLeft} onTimeUp={handleGameEnd} maxTime={60} />}
         </div>
 
         <Card className="p-6">
