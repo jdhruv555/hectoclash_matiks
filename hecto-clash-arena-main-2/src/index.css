@@ -1,0 +1,440 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 0 72% 51%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 72% 51%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 0 72% 51%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 0 72% 51%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-game-bg text-game-text bg-[url('/grid-pattern.svg')];
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Game-style headings */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-gaming tracking-wide;
+  }
+}
+
+/* =========== Navigation & Dropdown Menu Styling =========== */
+/* ... keep existing code (navigation & dropdown menu styling) */
+
+/* =========== Original Styles =========== */
+/* ... keep existing code (original styles) */
+
+/* =========== Game UI Styles =========== */
+.digit-card {
+  @apply relative flex items-center justify-center bg-game-secondary rounded-lg text-4xl font-bold text-white w-14 h-16 shadow-lg transform transition-all;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 0 0 rgba(0,0,0,0.2), 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.digit-card:hover:not(:disabled) {
+  @apply transform translate-y-[-3px];
+  box-shadow: 0 7px 0 0 rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.digit-card:active:not(:disabled) {
+  @apply transform translate-y-[2px];
+  box-shadow: 0 2px 0 0 rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.1);
+  transition: all 0.1s;
+}
+
+.digit-card.selected {
+  @apply bg-game-primary scale-110;
+  animation: pulse-glow 1.5s infinite alternate;
+}
+
+.operator-btn {
+  @apply flex items-center justify-center bg-game-primary hover:bg-opacity-90 active:bg-opacity-80 text-white font-bold rounded-md w-10 h-10 shadow-md transition-all duration-200 text-xl;
+  box-shadow: 0 4px 0 0 rgba(0,0,0,0.2);
+}
+
+.operator-btn:hover:not(:disabled) {
+  @apply transform translate-y-[-2px];
+  box-shadow: 0 6px 0 0 rgba(0,0,0,0.2);
+}
+
+.operator-btn:active:not(:disabled) {
+  @apply transform translate-y-[2px];
+  box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+  transition: all 0.1s;
+}
+
+.game-btn {
+  @apply bg-game-accent hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200;
+  box-shadow: 0 4px 0 0 rgba(0,0,0,0.2);
+}
+
+.game-btn:hover:not(:disabled) {
+  @apply transform translate-y-[-2px];
+  box-shadow: 0 6px 0 0 rgba(0,0,0,0.2);
+  text-shadow: 0 0 8px rgba(255,255,255,0.5);
+}
+
+.game-btn:active:not(:disabled) {
+  @apply transform translate-y-[2px];
+  box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+  transition: all 0.1s;
+}
+
+.solution-preview {
+  @apply font-mono text-xl bg-muted/20 rounded-lg p-3 min-h-[3rem] break-all text-center;
+  border: 2px solid rgba(255,255,255,0.1);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+@keyframes celebrate {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.1) rotate(-5deg); }
+  50% { transform: scale(1.1) rotate(5deg); }
+  75% { transform: scale(1.1) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.celebrate {
+  animation: celebrate 0.8s ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 5px rgba(255,0,0,0.5); }
+  100% { box-shadow: 0 0 20px rgba(255,0,0,0.8); }
+}
+
+.featured-card {
+  @apply relative overflow-hidden rounded-xl shadow-xl transition-all duration-300 hover:shadow-2xl border border-white/10;
+  background: linear-gradient(135deg, rgba(30,30,30,1) 0%, rgba(0,0,0,1) 100%);
+  transform: perspective(1000px) rotateX(0deg);
+  transition: transform 0.3s ease-out;
+}
+
+.featured-card::after {
+  content: '';
+  @apply absolute top-0 left-0 w-full h-full pointer-events-none;
+  background: linear-gradient(135deg, rgba(255,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
+}
+
+.featured-card:hover {
+  transform: perspective(1000px) rotateX(2deg) translateY(-5px);
+}
+
+.math-gradient-text {
+  @apply font-extrabold;
+  background: linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 2s infinite;
+}
+
+@keyframes text-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.game-carousel {
+  @apply flex overflow-x-auto py-4 px-4 gap-4 snap-x snap-mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.game-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.game-card {
+  @apply rounded-lg overflow-hidden shadow-lg border border-white/10 snap-center min-w-[280px] max-w-[280px] flex-shrink-0 bg-gradient-to-br from-gray-900 to-black transition-all duration-300;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.game-card:hover {
+  @apply border-primary/50;
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 30px -5px rgba(255, 0, 0, 0.2);
+}
+
+.video-card {
+  @apply rounded-lg overflow-hidden shadow-lg relative border border-white/10;
+  background: linear-gradient(180deg, rgba(20,20,20,1) 0%, rgba(0,0,0,1) 100%);
+  transform: perspective(800px) rotateY(0deg);
+  transition: transform 0.5s ease;
+}
+
+.video-card::after {
+  content: '';
+  @apply absolute top-0 left-0 w-full h-full opacity-0 transition-opacity duration-300 pointer-events-none;
+  background: linear-gradient(135deg, rgba(255,0,0,0.2) 0%, rgba(0,0,0,0) 100%);
+}
+
+.video-card:hover::after {
+  @apply opacity-100;
+}
+
+.video-card:hover {
+  transform: perspective(800px) rotateY(5deg);
+}
+
+.glow-red {
+  animation: glow-red-pulse 2s infinite alternate;
+}
+
+@keyframes glow-red-pulse {
+  0% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.3); }
+  100% { box-shadow: 0 0 25px rgba(255, 0, 0, 0.6); }
+}
+
+/* Achievement animations */
+.achievement-earned {
+  animation: achievement-pop 0.6s ease-out;
+}
+
+@keyframes achievement-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  40% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Level-up animation */
+.level-up {
+  animation: level-up-anim 1s ease-out;
+}
+
+@keyframes level-up-anim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); filter: brightness(1.5); }
+  100% { transform: scale(1); }
+}
+
+/* Scoreboard shine effect */
+.scoreboard {
+  position: relative;
+  overflow: hidden;
+}
+
+.scoreboard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.3) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: skewX(-25deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  20% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Pixel borders */
+.pixel-border {
+  --pixel-size: 2px;
+  --pixel-color: rgba(255,255,255,0.2);
+  
+  position: relative;
+  border: var(--pixel-size) solid var(--pixel-color);
+  box-shadow: 0 0 0 var(--pixel-size) var(--pixel-color),
+              inset 0 0 0 var(--pixel-size) var(--pixel-color);
+}
+
+/* Game progress bar */
+.game-progress {
+  height: 10px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.game-progress-bar {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #ff4d4d, #ff0000);
+  box-shadow: 0 0 10px rgba(255,0,0,0.5);
+  transition: width 0.3s ease;
+}
+
+/* XP point animation */
+.xp-point {
+  position: absolute;
+  font-weight: bold;
+  color: #ffcc00;
+  text-shadow: 0 0 5px rgba(255, 204, 0, 0.8);
+  animation: float-up 1.5s forwards;
+  pointer-events: none;
+}
+
+@keyframes float-up {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-50px); opacity: 0; }
+}
+
+/* Star rating animation */
+.star-rating {
+  display: inline-flex;
+}
+
+.star {
+  color: #aaa;
+  font-size: 24px;
+  transition: all 0.3s ease;
+}
+
+.star.filled {
+  color: #ffcc00;
+  animation: star-pulse 0.5s ease-in-out;
+}
+
+@keyframes star-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
+
+/* Adding 3D and neon effects */
+.neon-text {
+  color: #fff;
+  text-shadow: 
+    0 0 5px #fff, 
+    0 0 10px #fff, 
+    0 0 15px #ff0000,
+    0 0 20px #ff0000, 
+    0 0 35px #ff0000, 
+    0 0 40px #ff0000;
+  animation: neon-pulse 1.5s infinite alternate;
+}
+
+@keyframes neon-pulse {
+  from {
+    text-shadow: 
+      0 0 5px #fff, 
+      0 0 10px #fff, 
+      0 0 15px #ff0000,
+      0 0 20px #ff0000;
+  }
+  to {
+    text-shadow: 
+      0 0 5px #fff, 
+      0 0 10px #fff, 
+      0 0 15px #ff0000,
+      0 0 20px #ff0000, 
+      0 0 25px #ff0000, 
+      0 0 30px #ff0000;
+  }
+}
+
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+
+.card-3d:hover {
+  transform: rotateY(5deg) rotateX(5deg);
+}
+
+/* Hover effects for interactive elements */
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Game points animation */
+.points-earned {
+  animation: points-pop 0.6s ease-out forwards;
+  position: absolute;
+  color: #ffcc00;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 50;
+  text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+}
+
+@keyframes points-pop {
+  0% { transform: scale(0.5) translateY(0); opacity: 0; }
+  20% { transform: scale(1.2) translateY(0); opacity: 1; }
+  100% { transform: scale(1) translateY(-50px); opacity: 0; }
+}
+
+/* Confetti animation for celebrations */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: var(--color);
+  opacity: var(--opacity);
+  transform: rotate(var(--rotation)) skew(var(--skew));
+  animation: confetti-fall var(--fall-duration) forwards;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-100vh) rotate(0); }
+  100% { transform: translateY(100vh) rotate(360deg); }
+}
