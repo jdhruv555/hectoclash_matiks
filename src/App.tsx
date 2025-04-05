@@ -1,59 +1,63 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Lazy load all components
+const Index = lazy(() => import("./pages/Index"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
 // Math Games
-import SpeedMath from "./pages/math-games/SpeedMath";
-import NumberPuzzles from "./pages/math-games/NumberPuzzles";
-import MathDuels from "./pages/math-games/MathDuels";
-import VisualMathPuzzle from "./pages/math-games/VisualMathPuzzle";
-import Cryptarithmetic from "./pages/math-games/Cryptarithmetic";
-
-// Brain Teasers
-import LogicPuzzles from "./pages/brain-teasers/LogicPuzzles";
-import PatternRecognition from "./pages/brain-teasers/PatternRecognition";
-import MemoryGames from "./pages/brain-teasers/MemoryGames";
-import Riddles from "./pages/brain-teasers/Riddles";
-
-// Learning
-import Tutorials from "./pages/learning/Tutorials";
-import Strategies from "./pages/learning/Strategies";
-import MentalMath from "./pages/learning/MentalMath";
-import InteractiveLessons from "./pages/learning/InteractiveLessons";
-import AdvancedTopics from "./pages/learning/AdvancedTopics";
-
-// Leaderboards
-import GlobalRankings from "./pages/leaderboards/GlobalRankings";
-import DailyChallenges from "./pages/leaderboards/DailyChallenges";
-import PersonalStats from "./pages/leaderboards/PersonalStats";
-import Achievements from "./pages/leaderboards/Achievements";
-
-// Lazy loaded components
+const SpeedMath = lazy(() => import("./pages/math-games/SpeedMath"));
+const NumberPuzzles = lazy(() => import("./pages/math-games/NumberPuzzles"));
+const MathDuels = lazy(() => import("./pages/math-games/MathDuels"));
+const VisualMathPuzzle = lazy(() => import("./pages/math-games/VisualMathPuzzle"));
+const Cryptarithmetic = lazy(() => import("./pages/math-games/Cryptarithmetic"));
 const CalculusQuest = lazy(() => import("./pages/math-games/CalculusQuest"));
 const GeometryDash = lazy(() => import("./pages/math-games/GeometryDash"));
+
+// Brain Teasers
+const LogicPuzzles = lazy(() => import("./pages/brain-teasers/LogicPuzzles"));
+const PatternRecognition = lazy(() => import("./pages/brain-teasers/PatternRecognition"));
+const MemoryGames = lazy(() => import("./pages/brain-teasers/MemoryGames"));
+const Riddles = lazy(() => import("./pages/brain-teasers/Riddles"));
+
+// Learning
+const Tutorials = lazy(() => import("./pages/learning/Tutorials"));
+const Strategies = lazy(() => import("./pages/learning/Strategies"));
+const MentalMath = lazy(() => import("./pages/learning/MentalMath"));
+const InteractiveLessons = lazy(() => import("./pages/learning/InteractiveLessons"));
+const AdvancedTopics = lazy(() => import("./pages/learning/AdvancedTopics"));
 const FamousMathematicians = lazy(() => import("./pages/learning/FamousMathematicians"));
 
-// Loading fallback
+// Leaderboards
+const GlobalRankings = lazy(() => import("./pages/leaderboards/GlobalRankings"));
+const DailyChallenges = lazy(() => import("./pages/leaderboards/DailyChallenges"));
+const PersonalStats = lazy(() => import("./pages/leaderboards/PersonalStats"));
+const Achievements = lazy(() => import("./pages/leaderboards/Achievements"));
+
+// Loading fallback with better UI
 const LoadingFallback = () => (
-  <div className="w-full h-screen flex flex-col items-center justify-center p-8">
-    <div className="w-full max-w-3xl space-y-4">
-      <Skeleton className="h-12 w-3/4 mx-auto" />
-      <Skeleton className="h-6 w-1/2 mx-auto" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+  <div className="w-full h-screen flex flex-col items-center justify-center p-8 bg-background">
+    <div className="w-full max-w-3xl space-y-6">
+      <div className="text-center space-y-2">
+        <Skeleton className="h-12 w-3/4 mx-auto" />
+        <Skeleton className="h-6 w-1/2 mx-auto" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
         {Array(6).fill(0).map((_, i) => (
-          <div key={i} className="space-y-2">
-            <Skeleton className="h-40 w-full" />
-            <Skeleton className="h-6 w-3/4" />
+          <div key={i} className="space-y-4">
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
           </div>
         ))}
+      </div>
+      <div className="text-center mt-8">
+        <Skeleton className="h-4 w-1/4 mx-auto" />
       </div>
     </div>
   </div>
