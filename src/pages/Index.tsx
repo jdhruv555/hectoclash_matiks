@@ -95,10 +95,10 @@ const PopularGames = [
   },
   {
     id: "geometry-dash",
-    title: "Geometry Challenge",
-    description: "Calculate areas and angles in geometric puzzles",
-    difficulty: "Hard",
-    category: "Geometry",
+    title: "GeoDash: Math Rush",
+    description: "Jump over obstacles and solve math problems in this exciting Geometry Dash-style game",
+    difficulty: "Medium",
+    category: "Action",
     path: "/math-games/geometry-dash",
     color: "#1abc9c"
   },
