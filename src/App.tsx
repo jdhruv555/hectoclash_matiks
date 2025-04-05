@@ -72,13 +72,33 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Index />
+            </Suspense>
+          } />
           
           {/* Math Games Routes */}
-          <Route path="/math-games/hectoclash" element={<Index />} />
-          <Route path="/math-games/speed-math" element={<SpeedMath />} />
-          <Route path="/math-games/number-puzzles" element={<NumberPuzzles />} />
-          <Route path="/math-games/math-duels" element={<MathDuels />} />
+          <Route path="/math-games/hectoclash" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Index />
+            </Suspense>
+          } />
+          <Route path="/math-games/speed-math" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <SpeedMath />
+            </Suspense>
+          } />
+          <Route path="/math-games/number-puzzles" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <NumberPuzzles />
+            </Suspense>
+          } />
+          <Route path="/math-games/math-duels" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <MathDuels />
+            </Suspense>
+          } />
           <Route path="/math-games/calculus-quest" element={
             <Suspense fallback={<LoadingFallback />}>
               <CalculusQuest />
@@ -89,40 +109,102 @@ const App = () => (
               <GeometryDash />
             </Suspense>
           } />
-          <Route path="/math-games/visual-math-puzzle" element={<VisualMathPuzzle />} />
-          <Route path="/math-games/cryptarithmetic" element={<Cryptarithmetic />} />
+          <Route path="/math-games/visual-math-puzzle" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <VisualMathPuzzle />
+            </Suspense>
+          } />
+          <Route path="/math-games/cryptarithmetic" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Cryptarithmetic />
+            </Suspense>
+          } />
           
           {/* Brain Teasers Routes */}
-          <Route path="/brain-teasers/logic-puzzles" element={<LogicPuzzles />} />
-          <Route path="/brain-teasers/pattern-recognition" element={<PatternRecognition />} />
-          <Route path="/brain-teasers/memory-games" element={<MemoryGames />} />
-          <Route path="/brain-teasers/riddles" element={<Riddles />} />
-          <Route path="/brain-teasers/visual-math-puzzle" element={<VisualMathPuzzle />} />
-          <Route path="/brain-teasers/cryptarithmetic" element={<Cryptarithmetic />} />
+          <Route path="/brain-teasers/logic-puzzles" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <LogicPuzzles />
+            </Suspense>
+          } />
+          <Route path="/brain-teasers/pattern-recognition" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PatternRecognition />
+            </Suspense>
+          } />
+          <Route path="/brain-teasers/memory-games" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <MemoryGames />
+            </Suspense>
+          } />
+          <Route path="/brain-teasers/riddles" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Riddles />
+            </Suspense>
+          } />
           
           {/* Learning Routes */}
-          <Route path="/learning/tutorials" element={<Tutorials />} />
-          <Route path="/learning/strategies" element={<Strategies />} />
-          <Route path="/learning/mental-math" element={<MentalMath />} />
-          <Route path="/learning/interactive" element={<InteractiveLessons />} />
+          <Route path="/learning/tutorials" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Tutorials />
+            </Suspense>
+          } />
+          <Route path="/learning/strategies" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Strategies />
+            </Suspense>
+          } />
+          <Route path="/learning/mental-math" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <MentalMath />
+            </Suspense>
+          } />
+          <Route path="/learning/interactive" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <InteractiveLessons />
+            </Suspense>
+          } />
           <Route path="/learning/mathematicians" element={
             <Suspense fallback={<LoadingFallback />}>
               <FamousMathematicians />
             </Suspense>
           } />
-          <Route path="/learning/advanced-topics" element={<AdvancedTopics />} />
+          <Route path="/learning/advanced-topics" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <AdvancedTopics />
+            </Suspense>
+          } />
           
           {/* Leaderboards Routes */}
-          <Route path="/leaderboards/global" element={<GlobalRankings />} />
-          <Route path="/leaderboards/daily" element={<DailyChallenges />} />
-          <Route path="/leaderboards/stats" element={<PersonalStats />} />
-          <Route path="/leaderboards/achievements" element={<Achievements />} />
+          <Route path="/leaderboards/global" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <GlobalRankings />
+            </Suspense>
+          } />
+          <Route path="/leaderboards/daily" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <DailyChallenges />
+            </Suspense>
+          } />
+          <Route path="/leaderboards/stats" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <PersonalStats />
+            </Suspense>
+          } />
+          <Route path="/leaderboards/achievements" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Achievements />
+            </Suspense>
+          } />
           
           {/* Redirect old paths for compatibility */}
           <Route path="/math-sudoku" element={<Navigate to="/brain-teasers/logic-puzzles" replace />} />
           
           {/* Catch-all route */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <NotFound />
+            </Suspense>
+          } />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

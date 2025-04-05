@@ -51,7 +51,10 @@
   }
 
   body {
-    @apply bg-game-bg text-game-text bg-[url('/grid-pattern.svg')];
+    @apply bg-game-bg text-game-text;
+    background-image: url('/grid-pattern.svg');
+    background-repeat: repeat;
+    background-position: center;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 

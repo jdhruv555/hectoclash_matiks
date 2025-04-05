@@ -1,19 +1,32 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect, useState } from 'react';
+
+// Cleanup function for game resources
+export const cleanupGameResources = () => {
+  // Clear any intervals
+  const intervals = window.setInterval(() => {}, 0);
+  for (let i = 0; i < intervals; i++) {
+    window.clearInterval(i);
+  }
+  
+  // Clear any timeouts
+  const timeouts = window.setTimeout(() => {}, 0);
+  for (let i = 0; i < timeouts; i++) {
+    window.clearTimeout(i);
+  }
+  
+  // Clear any animation frames
+  const frame = window.requestAnimationFrame(() => {});
+  for (let i = 0; i < frame; i++) {
+    window.cancelAnimationFrame(i);
+  }
+};
 
 // Debounce hook for performance optimization
-export const useDebounce = <T extends (...args: any[]) => any>(
+export const useDebounce = <T extends (...args: any[]) => void>(
   callback: T,
   delay: number
-) => {
+): T => {
   const timeoutRef = useRef<NodeJS.Timeout>();
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   return useCallback(
     (...args: Parameters<T>) => {
@@ -26,37 +39,52 @@ export const useDebounce = <T extends (...args: any[]) => any>(
       }, delay);
     },
     [callback, delay]
-  );
+  ) as T;
 };
 
 // Throttle hook for performance optimization
-export const useThrottle = <T extends (...args: any[]) => any>(
+export const useThrottle = <T extends (...args: any[]) => void>(
   callback: T,
   delay: number
-) => {
+): T => {
   const lastRun = useRef<number>(0);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
   return useCallback(
     (...args: Parameters<T>) => {
       const now = Date.now();
-      if (now - lastRun.current >= delay) {
-        callback(...args);
-        lastRun.current = now;
+
+      if (lastRun.current && now - lastRun.current <= delay) {
+        // If the function was called within the delay period,
+        // schedule it to be called after the delay
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+
+        timeoutRef.current = setTimeout(() => {
+          lastRun.current = now;
+          callback(...args);
+        }, delay);
+
+        return;
       }
+
+      lastRun.current = now;
+      callback(...args);
     },
     [callback, delay]
-  );
+  ) as T;
 };
 
 // Memoize expensive calculations
-export const useMemoizedValue = <T>(value: T, dependencies: any[]) => {
-  const ref = useRef<T>(value);
+export const useMemoizedValue = <T>(value: T, dependencies: any[]): T => {
+  const [memoizedValue, setMemoizedValue] = useState<T>(value);
 
   useEffect(() => {
-    ref.current = value;
+    setMemoizedValue(value);
   }, dependencies);
 
-  return ref.current;
+  return memoizedValue;
 };
 
 // Request animation frame hook for smooth animations
@@ -84,23 +112,4 @@ export const useAnimationFrame = (callback: () => void) => {
       }
     };
   }, [animate]);
-};
-
-// Cleanup utility for game resources
-export const cleanupGameResources = () => {
-  // Cancel any pending animations
-  const animations = document.getAnimations();
-  animations.forEach(animation => animation.cancel());
-
-  // Clear any intervals
-  const highestIntervalId = window.setInterval(() => {}, 0);
-  for (let i = 0; i < highestIntervalId; i++) {
-    window.clearInterval(i);
-  }
-
-  // Clear any timeouts
-  const highestTimeoutId = window.setTimeout(() => {}, 0);
-  for (let i = 0; i < highestTimeoutId; i++) {
-    window.clearTimeout(i);
-  }
 }; 

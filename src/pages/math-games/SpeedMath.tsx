@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { GameWrapper } from '@/components/GameWrapper';
+import PageLayout from '@/components/PageLayout';
 import { useDebounce, useThrottle, useMemoizedValue } from '@/utils/performance';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,11 +76,9 @@ const SpeedMath: React.FC = () => {
   }, []);
 
   return (
-    <GameWrapper
+    <PageLayout
       title="Speed Math"
-      description="Solve math problems as quickly as you can!"
-      onGameStart={handleStartGame}
-      onGameEnd={handleGameEnd}
+      subtitle="Solve math problems as quickly as you can!"
     >
       <div className="w-full max-w-2xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
@@ -114,7 +112,7 @@ const SpeedMath: React.FC = () => {
           </Button>
         )}
       </div>
-    </GameWrapper>
+    </PageLayout>
   );
 };
 
