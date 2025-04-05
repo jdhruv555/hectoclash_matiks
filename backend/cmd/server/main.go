@@ -9,54 +9,51 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"voidal_hackfest25/backend/internal/handlers"
 )
 
-var (
-	rdb *redis.Client
-)
+var rdb *redis.Client
 
-func init() {
+func main() {
 	// Initialize Redis client
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-}
 
-func main() {
 	// Set Gin to release mode
 	gin.SetMode(gin.ReleaseMode)
 
-	// Create Gin router
-	router := gin.New()
+	// Create a new Gin router
+	r := gin.Default()
 
 	// Configure CORS
-	router.Use(cors.New(cors.Config{
+	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:8080"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
 
 	// Initialize routes
-	initializeRoutes(router)
+	initRoutes(r)
 
 	// Create server
 	srv := &http.Server{
 		Addr:    ":8081",
-		Handler: router,
+		Handler: r,
 	}
 
-	// Graceful shutdown
+	// Start server in a goroutine
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			log.Fatalf("Failed to start server: %v\n", err)
 		}
 	}()
 
@@ -65,7 +62,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	// Shutdown server
+	// Graceful shutdown
 	log.Println("Shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -77,21 +74,27 @@ func main() {
 	log.Println("Server exiting")
 }
 
-func initializeRoutes(router *gin.Engine) {
+func initRoutes(r *gin.Engine) {
 	// Health check
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
 	// API routes
-	api := router.Group("/api")
+	api := r.Group("/api")
 	{
-		// Math Games routes
-		api.GET("/riddles", getRiddles)
-		api.GET("/geometry-dash/problems", getGeometryDashProblems)
-		api.POST("/geometry-dash/score", saveGeometryDashScore)
+		// Riddles routes
+		api.GET("/riddles", handlers.GetRiddles)
+
+		// Geometry Dash routes
+		api.GET("/geometry-dash/problems", handlers.GetGeometryDashProblems)
+		api.POST("/geometry-dash/score", handlers.SaveGeometryDashScore)
+
+		// HectoClash routes
+		api.POST("/hecto-clash/score", handlers.SaveHectoClashScore)
+		api.GET("/hecto-clash/leaderboard", handlers.GetHectoClashLeaderboard)
 	}
 
-	// Serve static files in production
-	router.Static("/static", "./static")
+	// Serve static files
+	r.Static("/static", "./static")
 } 

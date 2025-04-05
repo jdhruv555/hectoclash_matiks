@@ -4,7 +4,7 @@ export interface Riddle {
   question: string;
   answer: string;
   hint: string;
-  difficulty: string;
+  difficulty: 'easy' | 'medium' | 'hard';
 }
 
 export interface GeometryDashProblem {
@@ -41,7 +41,20 @@ export const api = {
       body: JSON.stringify({ score }),
     });
     if (!response.ok) {
-      throw new Error('Failed to save score');
+      throw new Error('Failed to save geometry dash score');
+    }
+  },
+
+  saveHectoClashScore: async (score: number): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/hecto-clash/score`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ score }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to save hecto clash score');
     }
   },
 }; 
